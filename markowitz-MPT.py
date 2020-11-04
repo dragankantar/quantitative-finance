@@ -28,6 +28,7 @@ data = yf.download(tickers, start, end)
 r = data['Close'].pct_change()
 r = r.iloc[1:]
 mu = np.mean(r)
+mu = mu.to_numpy()
 covmtx = np.cov(r, rowvar = False)
 
 markowitz_MPT(mu, covmtx, 0.2)
