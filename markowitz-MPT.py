@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from pandas import datetime
+import datetime
 from datetime import timedelta
 import matplotlib.pyplot as plt
 import yfinance as yf
@@ -25,12 +25,12 @@ start = '2010-1-1'
 end = '2020-1-1'
 
 data = yf.download(tickers, start, end)
+data['Close']
 
-# getting mu
+r = data['Close'].pct_change()
+covmtx = np.cov(r.T)
 
-# getting cov
-
-markowitz_MPT()
+markowitz_MPT(r, covmtx, 0.2)
 
 
 
