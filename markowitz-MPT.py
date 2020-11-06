@@ -7,7 +7,7 @@ import cvxpy as cvx
 
 def markowitz_MPT(mu, covmtx, gamma):
     w = cvx.Variable(len(mu))
-    gamma = cvx.Parameter(nonneg=True)
+    gamma = cvx.Parameter(nonneg=True, value=gamma)
     returns = mu @ w.T 
     risk = cvx.quad_form(w, covmtx)
 
@@ -21,7 +21,7 @@ def markowitz_MPT(mu, covmtx, gamma):
 
 tickers = 'SPY, DJI, STI'
 start = '2010-1-1'
-end = '2020-1-1'
+end = '2018-1-1'
 
 data = yf.download(tickers, start, end)
 
