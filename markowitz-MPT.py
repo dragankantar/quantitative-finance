@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-import datetime
 import matplotlib.pyplot as plt
+import datetime
 import yfinance as yf
 import cvxpy as cvx
 
@@ -25,10 +25,8 @@ end = '2018-1-1'
 
 data = yf.download(tickers, start, end)
 
-r = data['Close'].pct_change()
-r = r.iloc[1:]
-mu = np.mean(r)
-mu = mu.to_numpy()
+r = data['Close'].pct_change().iloc[1:]
+mu = np.mean(r).to_numpy()
 covmtx = np.cov(r, rowvar = False)
 
 markowitz_MPT(mu, covmtx, 0.2)
