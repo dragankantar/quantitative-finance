@@ -8,7 +8,6 @@ import cvxpy as cvx
 def pmpt(mu, returns, percentile, max_loss):
     w = cvx.Variable(returns.shape[1])
 
-    # Number of worst-case return periods to sample.
     nsamples = round(returns.shape[0] * percentile)
 
     portfolio_rets = returns @ w
@@ -35,7 +34,6 @@ data = yf.download(tickers, start, end)
 
 r = data['Close'].pct_change().iloc[1:].to_numpy() # returns of assets
 mu = np.mean(r).to_numpy() # expected returns of assets
-covmtx = np.cov(r, rowvar = False)
 percentile = 0.05 # defines worst days
 max_loss = -0.05 # maximum acceptable loss
 
@@ -56,4 +54,3 @@ for i in range(r_forplot.shape[1]):
     
 plt.tight_layout()
 plt.show() 
-
