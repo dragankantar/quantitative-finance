@@ -5,25 +5,17 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 class cleaner:
     def __init__(self, train, test, pred, max_feat, num_folds):
-        self.train = pd.read_csv(train)
-        self.test = pd.read_csv(test)
-        self.train = xgb.DMatrix(train+'?format=csv&label_column=0')
-        self.test = xgb.DMatrix(test+'?format=csv&label_column=0')
+        self.train = xgb.DMatrix(data=train[:, 0], labels=train[:, 1])
+        self.test = xgb.DMatrix(data=test[:, 0], labels=test[:, 1])
         self.pred = pred
         self.max_feat = max_feat
         self.num_folds = num_folds
 
-        self.train = xgb.DMatrix(train+'?format=csv&label_column=0')
-        self.test = xgb.DMatrix(test+'?format=csv&label_column=0')
-
     def xgboo():
-        dtrain = xgb.DMatrix(data=self.train[:, 0], labels=self.train[:, 1])
-        dtest = xgb.DMatrix(data=self.test[:, 0], labels=self.test[:, 1])
-
         num_round=10
-        model = xgb.train(param, dtrain, num_round, evallist)
+        model = xgb.train(param, self.train, num_round, evallist)
 
-        pred = model.predict(dtest)
+        pred = model.predict(self.test)
 
     def out(self):
         pred = pd.DataFrame(index=range(len(self.train)), columns=['Sentence', 'Predicted Bad Sentence'])
