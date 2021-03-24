@@ -113,3 +113,87 @@ print('Accuracy for Tf-Idf & XGBoost Classifier : ', scores.mean())
 # TODO: Testing
 # TODO: outputing
 # TODO: take care fo max_feat2
+
+###########################################################################################
+###########################################################################################
+# Meeting draft
+
+import numpy as np
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.pipeline import Pipeline
+from xgboost import XGBClassifier
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import f1_score
+
+train = pd.read_csv("train_data.csv")
+test = pd.read_csv("test_data.csv")
+
+
+from gensim import utils
+import gensim.parsing.preprocessing as gsp
+
+filters = [
+           gsp.strip_tags, 
+           gsp.strip_punctuation,
+           gsp.strip_multiple_whitespaces,
+           gsp.strip_numeric,
+           gsp.remove_stopwords, 
+           gsp.strip_short, 
+           gsp.stem_text
+          ]
+
+def clean_text(s):
+    s = s.lower()
+    s = utils.to_unicode(s)
+    for f in filters:
+        s = f(s)
+    return s
+
+df_x = train['Sentence']
+df_y = train['Bad Sentence']
+
+from sklearn.base import BaseEstimator
+
+class Text2TfIdfTransformer(BaseEstimator):
+    def __init__(self):
+        self._model = TfidfVectorizer()
+        pass
+
+    def fit(self, df_x, df_y=None):
+        df_x = df_x.apply(lambda x : clean_text(x))
+        self._model.fit(df_x)
+        return self
+
+    def transform(self, df_x):
+        return self._model.transform(df_x)
+
+tfidf_transformer = Text2TfIdfTransformer()
+tfidf_vectors = tfidf_transformer.fit(df_x).transform(df_x)
+tfidf_vectors.shape
+print(tfidf_vectors)
+
+pl_xgb_tf_idf = Pipeline(steps=[('tfidf',Text2TfIdfTransformer()),
+                         ('xgboost', xgb.XGBClassifier(objective='binary:hinge'))])
+
+
+param = {
+    'n_estimators': [100, 150],
+    'max_depth': [7, 11, 15],
+    'learning_rate': [0.1]
+}
+
+pl_xgb_tf_idf = Pipeline(steps=[('tfidf',Text2TfIdfTransformer()),
+                         ('xgboost', GridSearchCV(xgb.XGBClassifier(objective='binary:hinge'),
+                                                  param_grid=param,
+                                                   cv=5,
+                                                   n_jobs=-1,
+                                                   scoring=f1_score
+                                                 ))])
+
+
+cv_fit = pl_xgb_tf_idf.fit(df_x, df_y)
+
+cv_fit
+cv_fit.get_params()
