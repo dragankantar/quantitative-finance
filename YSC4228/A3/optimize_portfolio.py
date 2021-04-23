@@ -31,35 +31,54 @@ def main():
     test_months = args.test_months
     TO_PLOT = args.plot_weights
 
-    print("Arguments are these: \n")
-    print(optimizer)
-    print(backtest_type)
-    print(tickers)
-    print(backtest_months)
-    print(test_months)
-    print(TO_PLOT)
-    print("\n")
+    if ((backtest_months % test_months) != 0):
+        print("Backtest month should be a multiple of test months.")
+        return
+
+   
+    # print("Arguments are these: \n")
+    # print(optimizer)
+    # print(backtest_type)
+    # print(tickers)
+    # print(backtest_months)
+    # print(test_months)
+    # print(TO_PLOT)
+    # print("\n")
+    
 
     bck_tstr = BackTester(tickers)
 
-    start_date, end_date = bck_tstr.get_dates(test_months)
-    df = bck_tstr.get_data_frame(start_date, end_date)
+    start_date, end_date,  backtest_start_date = bck_tstr.get_dates(test_months, backtest_months)
+    df = bck_tstr.get_data_frame(backtest_start_date, start_date)
+
+    #if optimizer == "msr" or optimizer == "mvo":
+    optimized_portfolio, performance = bck_tstr.get_portfolio(df, optimizer)
+    # expected statistics
+    expected_annual_return,annual_volatility, sharpe_ratio = performance
+  
+        
 
 
-
+    #print("Print back-test start date is " +  backtest_start_date.strftime('%Y-%m-%d'))
     print("Start date is " + start_date.strftime('%Y-%m-%d'))
     print("End date is " + end_date.strftime('%Y-%m-%d'))
+    print("\nExpected Statistics\n")
+    print("Annual Return: " + str(expected_annual_return))
+    print("Annual Volatility: " + str(annual_volatility))
+    print("Annual Sharpe Ratio: " + str(sharpe_ratio))
+
+    
     print("Head of data frame between this start date and end date looks like:")
     print(df.head())
-
-
+    print(optimized_portfolio)
+    
     return
-
+    
 
 if __name__ == "__main__":
     #try:
     main()
-   # except:
+    # except:
     #    print("Please provide new command. Did not accept current command.")
 
 

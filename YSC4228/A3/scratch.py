@@ -82,3 +82,75 @@ for i in range (tick):
 
 if args.plot_weights:
     portfolio.plot_weights()
+
+
+#######################################################
+#Alaukik's start
+
+import datetime 
+tod = datetime.datetime.now()
+d = datetime.timedelta(days = 1)
+a = tod - d
+backtest_type = "wf"
+
+tickers = ['BA', 'AMD', 'AAPL']
+start = dt.datetime(2021, 3, 1)
+end = dt.datetime(2021, 3, 30)
+ohlc = yf.download(tickers, start=start, end=end)
+prices = ohlc["Adj Close"].dropna(how="all")
+df = prices
+
+
+from pypfopt.expected_returns import mean_historical_return
+from pypfopt.risk_models import CovarianceShrinkage
+
+mu = mean_historical_return(df)
+S = CovarianceShrinkage(df).ledoit_wolf()
+from pypfopt.efficient_frontier import EfficientFrontier
+
+ef = EfficientFrontier(mu, S)
+weights = ef.max_sharpe()
+cleaned_weights = ef.clean_weights()
+# ef.save_weights_to_file("weights.txt")  # saves to file
+print(cleaned_weights)
+
+ef.portfolio_performance(verbose=True);
+
+#####################################################################################
+# an example from pyportfolioopt
+
+# if you already have expected returns and risk model
+from pypfopt.efficient_frontier import EfficientFrontier
+
+ef = EfficientFrontier(mu, S)
+weights = ef.max_sharpe()
+
+# if you do not
+
+import pandas as pd
+from pypfopt.efficient_frontier import EfficientFrontier
+from pypfopt import risk_models
+from pypfopt import expected_returns
+
+# Read in price data
+df = pd.read_csv("tests/resources/stock_prices.csv", parse_dates=True, index_col="date")
+
+# Calculate expected returns and sample covariance
+mu = expected_returns.mean_historical_return(df)
+S = risk_models.sample_cov(df)
+
+# Optimize for maximal Sharpe ratio
+ef = EfficientFrontier(mu, S)
+weights = ef.max_sharpe()
+ef.portfolio_performance(verbose=True)
+
+
+
+
+
+
+
+
+
+
+
