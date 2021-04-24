@@ -47,6 +47,9 @@ Kelvin
 """
 
 import argparse
+from pypfopt.objective_functions import portfolio_return
+
+from sklearn.utils import shuffle
 
 def parsing(parser):
     parser.add_argument("--tickers", help="Assets tickers", required=True)
@@ -144,13 +147,113 @@ ef = EfficientFrontier(mu, S)
 weights = ef.max_sharpe()
 ef.portfolio_performance(verbose=True)
 
+#########################################
+
+from sklearn.model_selection import train_test_split, ShuffleSplit
+import numpy as np
+X, y = np.arange(10).reshape((5, 2)), range(12)
+list(y)
+train_test_split(y, test_size = 1/12, train_size = 11/12, shuffle=False)
+next(ShuffleSplit().split(y))
+
+len=120
+btm = 12
+list(range(btm))
+
+2*len/btm + len/btm-1
 
 
 
 
+df = 0:119
+test1 = 0:9
+test2 = 10:19
+test3 = 20:29
+test4 = 30:39
+test5 = 40:49
+test6 = 50:59
+test7 = 60:69
+test8 = 70:79
+test9 = 80:89
+test10 = 90:99
+test11 = 100:109
+test12 = 110:119
+
+from _typeshed import StrPath
+import numpy as np
+import matplotlib.pyplot as plt
+import statistics
+import datetime
+import pandas as pd
+from dateutil.relativedelta import relativedelta
+import pandas_datareader as web
+import yfinance as yf
+from pypfopt.expected_returns import mean_historical_return
+from pypfopt.risk_models import CovarianceShrinkage
+from pypfopt.efficient_frontier import EfficientFrontier
+from pypfopt.hierarchical_portfolio import HRPOpt
 
 
 
 
+end_date = datetime.date.today()
+end_date = datetime.date(2021, 3, 31)
+start_date = end_date - relativedelta(months=1)
+back_test_date = end_date - relativedelta(months=12)
+
+df = yf.download("AAPL,GOOG,FB", start=back_test_date, end=start_date)
+df = df["Adj Close"].dropna(how="all")
+
+test_df = yf.download("AAPL,GOOG,FB", start=start_date, end=end_date)
+test_df = test_df["Adj Close"].dropna(how="all")
+
+returns = df.pct_change().dropna()
+hrp = HRPOpt(returns)
+weights = hrp.optimize()
+performance = hrp.portfolio_performance(verbose=True)
+
+optimizer = "mvo"
+mu = mean_historical_return(df)
+S = CovarianceShrinkage(df).ledoit_wolf()
+ef = EfficientFrontier(mu, S)
+weights = ef.max_sharpe() if optimizer == "msr" else ef.min_volatility()
+cleaned_weights = ef.clean_weights() # maybe remove this bc simplicity
+performance = ef.portfolio_performance()
+
+weights = pd.Series(weights)
+total_asset_returns = (test_df.iloc[-1]-test_df.iloc[0])/test_df.iloc[0]
+
+test_months = 1
+
+realized_annual_returns = (test_df.iloc[-1]/test_df.iloc[0])**(12/test_months)-1
 
 
+
+annual_returns = (test_df.iloc[-1]/test_df.iloc[0])**(12/test_months)-1
+weights*annual_returns
+portfolio_returns = sum(weights*total_asset_returns)
+
+
+sum(weights*((test.iloc[-1]/test.iloc[0])**(12/test_months)-1))
+sum(np.std(test_df)*weights)
+
+
+
+aum = 10000
+investment = weights*aum
+number_of_shares = investment / test_df.iloc[0,:]
+number_of_shares
+
+
+train_returns = train.pct_change().dropna()
+hrp = HRPOpt(train_returns)
+weights = hrp.optimize()
+weights = pd.Series(weights)
+
+performance = hrp.portfolio_performance(verbose=True)
+
+back_test_months = 12
+all_weights = np.zeros((back_test_months, np.shape(df)[1]))
+all_weights[0] = weights
+
+weights.index[0]

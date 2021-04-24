@@ -35,7 +35,7 @@ def main():
         print("Backtest month should be a multiple of test months.")
         return
 
-   
+
     # print("Arguments are these: \n")
     # print(optimizer)
     # print(backtest_type)
@@ -44,7 +44,7 @@ def main():
     # print(test_months)
     # print(TO_PLOT)
     # print("\n")
-    
+
 
     bck_tstr = BackTester(tickers)
 
@@ -55,8 +55,7 @@ def main():
     optimized_portfolio, performance = bck_tstr.get_portfolio(df, optimizer)
     # expected statistics
     expected_annual_return,annual_volatility, sharpe_ratio = performance
-  
-        
+
 
 
     #print("Print back-test start date is " +  backtest_start_date.strftime('%Y-%m-%d'))
@@ -67,13 +66,13 @@ def main():
     print("Annual Volatility: " + str(annual_volatility))
     print("Annual Sharpe Ratio: " + str(sharpe_ratio))
 
-    
+
     print("Head of data frame between this start date and end date looks like:")
     print(df.head())
     print(optimized_portfolio)
-    
+
     return
-    
+
 
 if __name__ == "__main__":
     #try:
