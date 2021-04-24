@@ -1,3 +1,11 @@
+"""
+This script defines BackTester class of objects.
+
+usage with optimize_portfolio.py: no need to use it directly, just run optimize_portfolio.py though a shell
+usage without optimize_portfolio.py: import the class to the main script, create object and use the object for backtesting asset allocation
+
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import datetime
@@ -8,9 +16,6 @@ from pypfopt.expected_returns import mean_historical_return
 from pypfopt.risk_models import CovarianceShrinkage
 from pypfopt.efficient_frontier import EfficientFrontier
 from pypfopt.hierarchical_portfolio import HRPOpt
-
-# TODO: add docstrings
-# ?: How to do purging (and embargoing)
 
 class BackTester():
 
@@ -27,6 +32,7 @@ class BackTester():
         Returns:
             datetime.date: dates at the start and end of training and testing period
         """
+
         end_date = datetime.date.today()
         start_date = end_date - relativedelta(months=test_months)
         back_test_date = end_date - relativedelta(months=backtest_months)
@@ -43,6 +49,7 @@ class BackTester():
         Returns:
             [pandas.Series]: daily share price data
         """
+
         train = yf.download(self.tickers, start=back_test_date, end=start_date)
         train = train["Adj Close"].dropna(how="all")
 
@@ -67,6 +74,7 @@ class BackTester():
         Returns:
             [pandas.Series, float]: expected and realised asset performance
         """
+
         if optimizer == "hrp":
             returns = train.pct_change().dropna()
             hrp = HRPOpt(returns)
@@ -75,7 +83,7 @@ class BackTester():
             performance = hrp.portfolio_performance(verbose=True)
 
             realised_annual_return = sum(weights*((test.iloc[-1]/test.iloc[0])**(12/test_months)-1))
-            realised_annual_volatility = sum(weights*np.std(test))*np.sqrt(12)
+            realised_annual_volatility = sum(weights*np.std(test.pct_change().dropna())*np.sqrt(251))
             realised_sharpe_ratio = (realised_annual_return-annual_risk_free_rate)/realised_annual_volatility
 
             return weights, performance, realised_annual_return, realised_annual_volatility, realised_sharpe_ratio
@@ -88,7 +96,7 @@ class BackTester():
             performance = ef.portfolio_performance()
 
             realised_annual_return = sum(weights*((test.iloc[-1]/test.iloc[0])**(12/test_months)-1))
-            realised_annual_volatility = sum(weights*np.std(test))*np.sqrt(12)
+            realised_annual_volatility = sum(weights*np.std(test.pct_change().dropna())*np.sqrt(251))
             realised_sharpe_ratio = (realised_annual_return-annual_risk_free_rate)/realised_annual_volatility
 
             return weights, performance, realised_annual_return, realised_annual_volatility, realised_sharpe_ratio
@@ -106,6 +114,7 @@ class BackTester():
         Returns:
             [pandas.Series, float]: expected and realised asset performance
         """
+
         embargo = np.round_(0.01*len(data), decimals=0)
         all_weights = np.zeros((back_test_months, np.shape(data)[1]))
         all_realised_annual_return = np.zeros(back_test_months)
@@ -116,8 +125,8 @@ class BackTester():
 
             test_start = i*len(data)/back_test_months
             test_end = test_start+len(data)/back_test_months-1
-            test = data.iloc[test_start:test_end, :]
-            train = data.iloc[np.r_[0:test_start, test_end+embargo:-1]]
+            test = data.iloc[int(test_start):int(test_end), :]
+            train = data.iloc[np.r_[0:int(test_start), int(test_end)+int(embargo):len(data)], :]
 
             if optimizer == "hrp":
                 train_returns = train.pct_change().dropna()
@@ -135,8 +144,8 @@ class BackTester():
                 all_weights[i] = weights
                 performance = ef.portfolio_performance()
 
-            all_realised_annual_return[i] = sum(weights[i]*((test.iloc[-1]/test.iloc[0])**(12/test_months)-1))
-            all_realised_annual_volatility[i] = sum(weights[i]*np.std(test))*np.sqrt(12)
+            all_realised_annual_return[i] = sum(all_weights[i]*((test.iloc[(len(test)-1)]/test.iloc[0])**(12/test_months)-1))
+            all_realised_annual_volatility[i] = sum(all_weights[i]*np.std(test.pct_change().dropna())*np.sqrt(251))
             all_realised_sharpe_ratio = (all_realised_annual_return[i]-annual_risk_free_rate)/all_realised_annual_volatility[i]
 
         weights = np.mean(all_weights)
@@ -157,9 +166,10 @@ class BackTester():
         Returns:
             [int]: number of shares of each asset to be purchased
         """
+
         investment = weights*aum
-        number_of_shares = investment / test[0,:]
-        return number_of_shares
+        number_of_shares = investment / test.iloc[0,:]
+        return number_of_shares.round(0).astype(int)
 
     def plot_weights(self, weights):
         """Plot horizontal barchart of portfolio weights
@@ -167,11 +177,12 @@ class BackTester():
         Args:
             weights (pandas.Series): portfolio weights
         """
+
         y = weights.index
         x = weights
 
         plt.barh(y, x)
-        plt.ylabel("Assets")
-        plt.xlabel("Weights")
+        plt.ylabel("Asset")
+        plt.xlabel("Weight")
         plt.title("Weights Horizontal Barplot")
         plt.show()

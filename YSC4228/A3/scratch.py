@@ -212,17 +212,17 @@ hrp = HRPOpt(returns)
 weights = hrp.optimize()
 performance = hrp.portfolio_performance(verbose=True)
 
-optimizer = "mvo"
-mu = mean_historical_return(df)
-S = CovarianceShrinkage(df).ledoit_wolf()
-ef = EfficientFrontier(mu, S)
-weights = ef.max_sharpe() if optimizer == "msr" else ef.min_volatility()
-cleaned_weights = ef.clean_weights() # maybe remove this bc simplicity
-performance = ef.portfolio_performance()
+    optimizer = "mvo"
+    mu = mean_historical_return(df)
+    S = CovarianceShrinkage(df).ledoit_wolf()
+    ef = EfficientFrontier(mu, S)
+    weights = ef.max_sharpe() if optimizer == "msr" else ef.min_volatility()
+    cleaned_weights = ef.clean_weights() # maybe remove this bc simplicity
+    performance = ef.portfolio_performance()
+
 
 weights = pd.Series(weights)
 total_asset_returns = (test_df.iloc[-1]-test_df.iloc[0])/test_df.iloc[0]
-
 test_months = 1
 
 realized_annual_returns = (test_df.iloc[-1]/test_df.iloc[0])**(12/test_months)-1
@@ -257,3 +257,104 @@ all_weights = np.zeros((back_test_months, np.shape(df)[1]))
 all_weights[0] = weights
 
 weights.index[0]
+
+weights[0]
+
+number_of_shares
+
+
+df_index = list(range(len(df)))
+df.reindex(df_index)
+df
+
+pd.to_numeric(df.index, downcast='float')
+# although normally I would prefer an integer, and to coerce errors to NaN
+pd.to_numeric(df.index, errors = 'coerce',downcast='integer')
+
+df.index
+
+
+df["index"] = df_index
+
+type(df_index[0])
+
+
+
+#data_index = list(range(len(data)))
+#data["index"] = data_index
+#data.set_index("index")
+
+
+
+end_date = datetime.date.today()
+start_date = end_date - relativedelta(months=1)
+back_test_date = end_date - relativedelta(months=12)
+
+back_test_months
+i=0
+embargo = int(np.round_(0.01*len(data), decimals=0))
+data = yf.download("AAPL,GOOG,FB", start=back_test_date, end=end_date)
+data = data["Adj Close"].dropna(how="all")
+
+test_start = i*len(data)/back_test_months
+test_start
+test_end = test_start+len(data)/back_test_months-1
+test_end
+test = data.iloc[int(test_start):int(test_end), :]
+test
+train = data.iloc[np.r_[0:int(test_start), int(test_end)+int(embargo):len(data)], :]
+train
+
+
+data.iloc[np.r_[0:5, 150:155], :]
+
+
+data.iloc[200:-1, :]
+
+all_weights = np.zeros((back_test_months, np.shape(data)[1]))
+
+
+
+
+
+###
+annual_risk_free_rate = 0.02
+optimizer = "mvo"
+embargo = np.round_(0.01*len(data), decimals=0)
+all_weights = np.zeros((back_test_months, np.shape(data)[1]))
+all_realised_annual_return = np.zeros(back_test_months)
+all_realised_annual_volatility = np.zeros(back_test_months)
+all_realised_sharpe_ratio = np.zeros(back_test_months)
+
+for i in range(back_test_months):
+
+    test_start = i*len(data)/back_test_months
+    test_end = test_start+len(data)/back_test_months-1
+    test = data.iloc[int(test_start):int(test_end), :]
+    train = data.iloc[np.r_[0:int(test_start), int(test_end)+int(embargo):len(data)], :]
+    #print("test", test)
+    #print("train", train)
+    if optimizer == "hrp":
+        train_returns = train.pct_change().dropna()
+        hrp = HRPOpt(train_returns)
+        weights = hrp.optimize()
+        weights = pd.Series(weights)
+        all_weights[i] = weights
+        performance = hrp.portfolio_performance(verbose=True)
+    else:
+        mu = mean_historical_return(train)
+        S = CovarianceShrinkage(train).ledoit_wolf()
+        ef = EfficientFrontier(mu, S)
+        weights = ef.max_sharpe() if optimizer == "msr" else ef.min_volatility()
+        weights = pd.Series(weights)
+        all_weights[i] = weights
+        performance = ef.portfolio_performance()
+
+    all_realised_annual_return[i] = sum(all_weights[i]*((test.iloc[(len(test)-1)]/test.iloc[0])**(12/test_months)-1))
+    all_realised_annual_volatility[i] = sum(all_weights[i]*np.std(test.pct_change().dropna())*np.sqrt(12))
+    all_realised_sharpe_ratio = (all_realised_annual_return[i]-annual_risk_free_rate)/all_realised_annual_volatility[i]
+
+weights = np.mean(all_weights)
+realised_annual_return = np.mean(all_realised_annual_return)
+realised_annual_volatility = np.mean(all_realised_annual_volatility)
+realised_sharpe_ratio = np.mean(all_realised_sharpe_ratio)
