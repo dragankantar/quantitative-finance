@@ -31,11 +31,11 @@ def main():
     parser = enable_parsing(parser)
     args = parser.parse_args()
 
-    print('\nArguments Parsed.\n')
+    print('\nArguments parsed.\n')
 
     sampler = Sampler(args.file, args.dollar_size)
 
-    print('\nLoading Data...\n')
+    print('\nLoading data...\n')
     data = sampler.get_data()
     print('\nData loaded.\n')
 
@@ -43,17 +43,17 @@ def main():
 
     print('\nPlot 1: Dollar Bars Time Series\n')
     sampler.plot_one(dollar_bars)
-    print('\nPlot 1 closed.')
+    print('\nPlot 1 closed.\n')
 
     original_bars_weekly = sampler.resample_weekly(data)
     dollar_bars_weekly = sampler.resample_weekly(dollar_bars)
 
     print('\nPlot 2: Number Bars Produced by the Original and the Dollar Bars on a Weekly Basis\n')
     sampler.plot_two(original_bars_weekly, dollar_bars_weekly)
-    print('\nPlot 2 closed.')
+    print('\nPlot 2 closed.\n')
 
-    print('Jarque-Bera Normality Test statistic for the original data: 'sampler.jarque_bera_test(data))
-    print('Jarque-Bera Normality Test statistic for the dollar bars: 'sampler.jarque_bera_test(dollar_bars))
+    print('\nJarque-Bera Normality Test statistic for the original data:', sampler.jarque_bera_test(data))
+    print('\nJarque-Bera Normality Test statistic for the dollar bars:', sampler.jarque_bera_test(dollar_bars), '\n')
 
 
 if __name__ == "__main__":
