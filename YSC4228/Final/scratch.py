@@ -1,15 +1,9 @@
-#get_dollar_bars.py --file e_mini_sp_series.csv --dollar_size 18000000
+#python get_dollar_bars.py --file e_mini_sp_series.csv --dollar_size 18000000
 import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats
-
-# TODO: test
-# TODO: jb test
-
-# TODO: plot 1
-# TODO: plot 2
 
 def enable_parsing(parser):
     """
@@ -39,8 +33,6 @@ class Bar():
         close = dataframe["Close"].pct_change()[1:]
         test = stats.jarque_bera(close)
         return test.statistic, test.pvalue
-
-
 
     def plot(self):
         """plots the assets under management over time

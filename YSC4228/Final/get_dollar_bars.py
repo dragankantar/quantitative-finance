@@ -1,38 +1,63 @@
+"""
+YSC4228: Data Science in Quantitative Finance
+Final Exam
+Dragan Kantar
+
+Run this script through a shell to sample a time series from a file.
+
+Usage example: python get_dollar_bars.py --file e_mini_sp_series.csv --dollar_size 18000000
+"""
 import argparse
 from dollar_bars import Sampler
 
-def enable_parsing(parser):
-    """
-    Function that adds the arguments to the parser
 
-    Returns: parser
-    """
-    parser.add_argument("--file", help="Time series data", required=True)
-    parser.add_argument("--dollar_size", type=int, help="Dollar size", required=True)
+def main():
 
-    return parser
+    def enable_parsing(parser):
+        """Adds the arguments to the parser
 
-parser = argparse.ArgumentParser()
-parser = enable_parsing(parser)
-args = parser.parse_args()
+        Args:
+            parser (Argument.Parser): parser
 
-sampler = Sampler(args.file, args.dollar_size)
+        Returns:
+            [parser]: parser
+        """
+        parser.add_argument("--file", help="Time series data", required=True)
+        parser.add_argument("--dollar_size", type=int, help="Dollar size", required=True)
 
-data = sampler.get_data()
+        return parser
 
-# plot 1
-dollar_bars = sampler.get_dollar_bars(data)
-sampler.plot_one(dollar_bars)
+    parser = argparse.ArgumentParser()
+    parser = enable_parsing(parser)
+    args = parser.parse_args()
 
-#sampler.plot_one(data)
+    print('\nArguments Parsed.\n')
 
-# plot 2
-original_bars_weekly = sampler.resample_weekly(data)
-dollar_bars_weekly = sampler.resample_weekly(dollar_bars)
-sampler.plot_two(original_bars_weekly, dollar_bars_weekly)
+    sampler = Sampler(args.file, args.dollar_size)
 
-#sampler.plot_two(dollar_bars_weekly)
+    print('\nLoading Data...\n')
+    data = sampler.get_data()
+    print('\nData loaded.\n')
 
-# JB test
-print(sampler.jarque_bera_test(data))
-print(sampler.jarque_bera_test(dollar_bars))
+    dollar_bars = sampler.get_dollar_bars(data)
+
+    print('\nPlot 1: Dollar Bars Time Series\n')
+    sampler.plot_one(dollar_bars)
+    print('\nPlot 1 closed.')
+
+    original_bars_weekly = sampler.resample_weekly(data)
+    dollar_bars_weekly = sampler.resample_weekly(dollar_bars)
+
+    print('\nPlot 2: Number Bars Produced by the Original and the Dollar Bars on a Weekly Basis\n')
+    sampler.plot_two(original_bars_weekly, dollar_bars_weekly)
+    print('\nPlot 2 closed.')
+
+    print('Jarque-Bera Normality Test statistic for the original data: 'sampler.jarque_bera_test(data))
+    print('Jarque-Bera Normality Test statistic for the dollar bars: 'sampler.jarque_bera_test(dollar_bars))
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except:
+        print("Error encountered. Please try another command.")
