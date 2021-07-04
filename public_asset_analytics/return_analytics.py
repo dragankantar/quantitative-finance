@@ -31,3 +31,34 @@ class ReturnAnalytics:
         """
         self.total_return = (self.data[-1]-self.data[0])/self.data[0]
         return self.total_return
+
+    def daily_returns(self):
+        """calculates daily returns (in percent)
+
+        Returns:
+            numpy.ndarray: daily returns (in percent)
+        """
+        daily_returns = self.data.pct_change()
+        return daily_returns
+
+    def average_daily_returns(self):
+        """finds the average daily return (in percent)
+
+        Returns:
+            float: average daily return (in percent)
+        """
+        average_daily_returns = self.data.pct_change().mean()
+        return average_daily_returns
+
+    def standard_deviation(self):
+        """calculates the standard deviation of the asset (daily data)
+
+        Returns:
+            float: standard deviation of the asset (daily data)
+        """
+        standard_deviation = np.std(self.data.pct_change())
+        return standard_deviation
+
+    def sharpe_ratio(self, risk_free_rate):
+        sharpe_ratio = (100*self.data.pct_change().mean()-risk_free_rate)/np.std(self.data.pct_change())
+        return sharpe_ratio
